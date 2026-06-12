@@ -4,104 +4,383 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>广告库存询量计算器</title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>📊 广告库存询量计算器</h1>
-            <p>静态版本 - 无需服务器，纯前端计算</p>
-        </header>
-
-        <main>
-            <!-- 省份选择 -->
-            <section class="section">
-                <h2>🗺️ 选择省份</h2>
-                <div class="province-grid" id="provinceGrid">
-                    <!-- 省份将通过 JS 动态生成 -->
-                </div>
-            </section>
-
-            <!-- 城市选择 -->
-            <section class="section" id="citySection" style="display: none;">
-                <h2>🏙️ 选择城市</h2>
-                <div class="city-grid" id="cityGrid">
-                    <!-- 城市将通过 JS 动态生成 -->
-                </div>
-            </section>
-
-            <!-- 资源位选择 -->
-            <section class="section" id="slotSection" style="display: none;">
-                <h2>📺 选择资源位</h2>
-                <div class="slot-grid" id="slotGrid">
-                    <!-- 资源位将通过 JS 动态生成 -->
-                </div>
-            </section>
-
-            <!-- 询量参数 -->
-            <section class="section" id="paramsSection" style="display: none;">
-                <h2>⚙️ 询量参数</h2>
-                <div class="params-form">
-                    <div class="form-group">
-                        <label>目标曝光量（次/天）</label>
-                        <input type="number" id="targetImpressions" value="100000" min="1">
-                    </div>
-                    <div class="form-group">
-                        <label>投放天数</label>
-                        <input type="number" id="days" value="7" min="1">
-                    </div>
-                    <div class="form-group">
-                        <label>优先级</label>
-                        <select id="priority">
-                            <option value="high">高</option>
-                            <option value="medium" selected>中</option>
-                            <option value="low">低</option>
-                        </select>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 计算结果 -->
-            <section class="section" id="resultSection" style="display: none;">
-                <h2>📈 询量结果</h2>
-                <div class="result-card">
-                    <div class="result-item">
-                        <span class="label">理论库存量</span>
-                        <span class="value" id="theoreticalInventory">-</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="label">可用库存量</span>
-                        <span class="value" id="availableInventory">-</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="label">满足率</span>
-                        <span class="value" id="fulfillmentRate">-</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="label">预估成本</span>
-                        <span class="value" id="estimatedCost">-</span>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 操作按钮 -->
-            <div class="actions">
-                <button class="btn btn-primary" id="calculateBtn" onclick="calculateInquiry()" style="display: none;">
-                    🧮 计算询量
-                </button>
-                <button class="btn btn-secondary" onclick="resetForm()">
-                    🔄 重新选择
-                </button>
+        <!-- 导航栏 -->
+        <nav class="navbar">
+            <div class="nav-brand">
+                <h1>📊 广告库存询量计算器</h1>
             </div>
-        </main>
+            <div class="nav-menu">
+                <a href="#list" class="nav-item active" onclick="showPage('list')">询量列表</a>
+                <a href="#calculator" class="nav-item" onclick="showPage('calculator')">询量计算</a>
+                <a href="#config" class="nav-item" onclick="showPage('config')">参数配置</a>
+            </div>
+        </nav>
 
-        <footer>
-            <p>广告库存询量计算器 v1.0 | 静态版本</p>
-        </footer>
+        <!-- 询量列表页 -->
+        <div id="page-list" class="page">
+            <div class="page-header">
+                <h2>询量记录列表</h2>
+                <button class="btn btn-primary" onclick="showPage('calculator')">+ 新建询量</button>
+            </div>
+            
+            <!-- 搜索筛选 -->
+            <div class="search-bar">
+                <input type="text" placeholder="搜索询量名称、广告主..." id="searchInput">
+                <select id="searchSlot">
+                    <option value="">全部资源位</option>
+                </select>
+                <button class="btn btn-secondary" onclick="searchRecords()">搜索</button>
+            </div>
+            
+            <!-- 列表表格 -->
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>询量ID</th>
+                            <th>询量名称</th>
+                            <th>媒体</th>
+                            <th>广告主</th>
+                            <th>资源位</th>
+                            <th>有效天数</th>
+                            <th>创建人</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordList">
+                        <!-- 动态生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 询量计算页 -->
+        <div id="page-calculator" class="page" style="display: none;">
+            <div class="page-header">
+                <h2>新建询量</h2>
+            </div>
+            
+            <div class="calculator-layout">
+                <!-- 左侧：输入条件 -->
+                <div class="input-panel">
+                    <h3>询量条件</h3>
+                    
+                    <!-- 基础信息 -->
+                    <div class="form-section">
+                        <h4>基础信息</h4>
+                        <div class="form-group">
+                            <label>询量名称 <span class="required">*</span></label>
+                            <input type="text" id="inquiryName" maxlength="120" placeholder="请输入询量名称">
+                        </div>
+                        <div class="form-group">
+                            <label>广告主</label>
+                            <input type="text" id="advertiser" maxlength="120" placeholder="请输入广告主">
+                        </div>
+                        <div class="form-group">
+                            <label>品牌</label>
+                            <input type="text" id="brand" maxlength="120" placeholder="请输入品牌">
+                        </div>
+                    </div>
+                    
+                    <!-- 媒体与资源位 -->
+                    <div class="form-section">
+                        <h4>媒体与资源位</h4>
+                        <div class="form-group">
+                            <label>媒体 <span class="required">*</span></label>
+                            <select id="media">
+                                <option value="banana" selected>banana</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>资源位 <span class="required">*</span></label>
+                            <select id="resourceSlot">
+                                <option value="">请选择资源位</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- 投放设置 -->
+                    <div class="form-section">
+                        <h4>投放设置</h4>
+                        <div class="form-group">
+                            <label>有效投放天数 <span class="required">*</span></label>
+                            <div class="input-with-unit">
+                                <input type="number" id="days" min="1" max="366" value="7">
+                                <span class="unit">天</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>投放周期最大频次</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="frequency" step="0.1" placeholder="如：7.5">
+                                <span class="unit">次</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 定向地域 -->
+                    <div class="form-section">
+                        <h4>定向地域</h4>
+                        <div class="form-group">
+                            <label>选择地域</label>
+                            <div class="region-selector">
+                                <div class="region-level">
+                                    <label>省份</label>
+                                    <select id="provinceSelect" multiple size="5">
+                                        <!-- 动态生成 -->
+                                    </select>
+                                </div>
+                                <div class="region-level">
+                                    <label>城市</label>
+                                    <select id="citySelect" multiple size="5">
+                                        <!-- 动态生成 -->
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="quick-select">
+                                <label>快捷选择：</label>
+                                <button class="btn btn-small" onclick="selectByTier('1')">一线城市</button>
+                                <button class="btn btn-small" onclick="selectByTier('2')">新一线</button>
+                                <button class="btn btn-small" onclick="selectByTier('3')">二线</button>
+                                <button class="btn btn-small" onclick="selectByTier('4')">三线</button>
+                                <button class="btn btn-small" onclick="selectByTier('5')">四线</button>
+                                <button class="btn btn-small" onclick="selectByTier('6')">五线+</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 人群包 -->
+                    <div class="form-section">
+                        <h4>人群包设置</h4>
+                        <div class="form-group">
+                            <label>自有DMP人群包规模</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="dmpSize" placeholder="设备数">
+                                <span class="unit">个</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>排除自有DMP人群包</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="excludeDmpSize" placeholder="设备数">
+                                <span class="unit">个</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>banana人群包规模</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="bananaSize" placeholder="设备数">
+                                <span class="unit">个</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>排除banana人群包</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="excludeBananaSize" placeholder="设备数">
+                                <span class="unit">个</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 定向设置 -->
+                    <div class="form-section">
+                        <h4>定向设置</h4>
+                        <div class="form-group">
+                            <label>定向年龄</label>
+                            <select id="targetAge" multiple>
+                                <!-- 动态生成 -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>定向性别</label>
+                            <select id="targetGender">
+                                <option value="">不限</option>
+                                <option value="male">男</option>
+                                <option value="female">女</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>设备尺寸</label>
+                            <div class="checkbox-group" id="deviceSizes">
+                                <!-- 动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 其他设置 -->
+                    <div class="form-section">
+                        <h4>其他设置</h4>
+                        <div class="form-group">
+                            <label>投放时段</label>
+                            <div class="time-range">
+                                <input type="time" id="startTime" value="00:00">
+                                <span>至</span>
+                                <input type="time" id="endTime" value="23:59">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>请求倍率</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="requestRate" step="0.01" placeholder="如：1.45">
+                                <span class="unit">倍</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="btn btn-primary btn-large" onclick="calculateInquiry()">🧮 开始询量</button>
+                </div>
+                
+                <!-- 右侧：结果展示 -->
+                <div class="result-panel">
+                    <h3>询量结果</h3>
+                    <div id="resultArea">
+                        <div class="empty-state">
+                            <p>请输入条件并点击"开始询量"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 参数配置页 -->
+        <div id="page-config" class="page" style="display: none;">
+            <div class="page-header">
+                <h2>询量参数配置</h2>
+            </div>
+            
+            <div class="config-layout">
+                <!-- 左侧菜单 -->
+                <div class="config-menu">
+                    <div class="menu-item active" onclick="showConfigSection('global')">全局参数配置</div>
+                    <div class="menu-item" onclick="showConfigSection('resource')">资源位配置</div>
+                    <div class="menu-item" onclick="showConfigSection('activity')">活跃度因子配置</div>
+                    <div class="menu-item" onclick="showConfigSection('targeting')">定向因子配置</div>
+                    <div class="menu-item" onclick="showConfigSection('time')">分时段流量占比</div>
+                </div>
+                
+                <!-- 右侧内容 -->
+                <div class="config-content">
+                    <!-- 全局参数 -->
+                    <div id="config-global" class="config-section">
+                        <h3>全局参数配置</h3>
+                        <div class="config-form">
+                            <div class="form-group">
+                                <label>漂移损耗因子</label>
+                                <input type="number" id="driftFactor" step="0.01" value="0.95">
+                                <span class="hint">固定经验值，表示地域定向的微小偏差</span>
+                            </div>
+                            <div class="form-group">
+                                <label>频次损耗因子</label>
+                                <input type="number" id="freqFactor" step="0.01" value="0.80">
+                                <span class="hint">用于修正因频次控制带来的触达损耗</span>
+                            </div>
+                            <div class="form-group">
+                                <label>库存售卖系数</label>
+                                <input type="number" id="inventoryFactor" step="0.01" value="0.60">
+                                <span class="hint">运营根据市场行情手动调整的全局变量</span>
+                            </div>
+                            <div class="form-group">
+                                <label>banana到平台折损因子</label>
+                                <input type="number" id="bananaFactor" step="0.01" value="1.00">
+                                <span class="hint">如果觉得当前大盘的量我们平台没有banana大，可以填写一个系数</span>
+                            </div>
+                            <div class="form-group">
+                                <label>全网总设备数</label>
+                                <div class="input-with-unit">
+                                    <input type="number" id="totalDevices" value="14000">
+                                    <span class="unit">万个</span>
+                                </div>
+                                <span class="hint">用于计算非开机/贴片资源位在未填频次时的理论库存上限</span>
+                            </div>
+                            <button class="btn btn-primary" onclick="saveGlobalConfig()">保存配置</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 其他配置项... -->
+                    <div id="config-resource" class="config-section" style="display: none;">
+                        <h3>资源位配置</h3>
+                        <div class="config-table">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>资源位名称</th>
+                                        <th>所属媒体</th>
+                                        <th>日默认最大频次</th>
+                                        <th>日最大库存PV</th>
+                                        <th>状态</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="resourceTable">
+                                    <!-- 动态生成 -->
+                                </tbody>
+                            </table>
+                            <button class="btn btn-secondary" onclick="addResourceSlot()">+ 新增资源位</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 活跃度因子配置 -->
+                    <div id="config-activity" class="config-section" style="display: none;">
+                        <h3>活跃度因子配置</h3>
+                        <div class="activity-matrix">
+                            <table class="data-table" id="activityTable">
+                                <!-- 动态生成 -->
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- 定向因子配置 -->
+                    <div id="config-targeting" class="config-section" style="display: none;">
+                        <h3>定向因子配置</h3>
+                        <div class="targeting-config">
+                            <h4>定向人群包因子</h4>
+                            <table class="data-table" id="targetingTable">
+                                <thead>
+                                    <tr>
+                                        <th>设备量级下限（万）</th>
+                                        <th>设备量级上限（万）</th>
+                                        <th>折损系数</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><input type="number" value="0"></td>
+                                        <td><input type="number" value="100"></td>
+                                        <td><input type="number" step="0.01" value="0.23"></td>
+                                        <td><button class="btn btn-small" onclick="deleteRow(this)">删除</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <button class="btn btn-secondary" onclick="addTargetingRow()">+ 新增一行</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 分时段流量占比 -->
+                    <div id="config-time" class="config-section" style="display: none;">
+                        <h3>分时段流量占比</h3>
+                        <div class="time-distribution">
+                            <table class="data-table" id="timeTable">
+                                <!-- 动态生成 -->
+                            </table>
+                            <div class="total-check">
+                                当前总和：<span id="totalPercentage">0</span>%
+                                <span id="percentageWarning" class="warning">总和必须等于100%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <script src="js/regions.js"></script>
-    <script src="js/data.js"></script>
-    <script src="js/app.js"></script>
+    <script src="regions.js"></script>
+    <script src="data.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
