@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>广告库存询量计算器</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 广告库存询量计算器</h1>
+            <p>静态版本 - 无需服务器，纯前端计算</p>
+        </header>
+
+        <main>
+            <!-- 省份选择 -->
+            <section class="section">
+                <h2>🗺️ 选择省份</h2>
+                <div class="province-grid" id="provinceGrid">
+                    <!-- 省份将通过 JS 动态生成 -->
+                </div>
+            </section>
+
+            <!-- 城市选择 -->
+            <section class="section" id="citySection" style="display: none;">
+                <h2>🏙️ 选择城市</h2>
+                <div class="city-grid" id="cityGrid">
+                    <!-- 城市将通过 JS 动态生成 -->
+                </div>
+            </section>
+
+            <!-- 资源位选择 -->
+            <section class="section" id="slotSection" style="display: none;">
+                <h2>📺 选择资源位</h2>
+                <div class="slot-grid" id="slotGrid">
+                    <!-- 资源位将通过 JS 动态生成 -->
+                </div>
+            </section>
+
+            <!-- 询量参数 -->
+            <section class="section" id="paramsSection" style="display: none;">
+                <h2>⚙️ 询量参数</h2>
+                <div class="params-form">
+                    <div class="form-group">
+                        <label>目标曝光量（次/天）</label>
+                        <input type="number" id="targetImpressions" value="100000" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>投放天数</label>
+                        <input type="number" id="days" value="7" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label>优先级</label>
+                        <select id="priority">
+                            <option value="high">高</option>
+                            <option value="medium" selected>中</option>
+                            <option value="low">低</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 计算结果 -->
+            <section class="section" id="resultSection" style="display: none;">
+                <h2>📈 询量结果</h2>
+                <div class="result-card">
+                    <div class="result-item">
+                        <span class="label">理论库存量</span>
+                        <span class="value" id="theoreticalInventory">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="label">可用库存量</span>
+                        <span class="value" id="availableInventory">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="label">满足率</span>
+                        <span class="value" id="fulfillmentRate">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="label">预估成本</span>
+                        <span class="value" id="estimatedCost">-</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 操作按钮 -->
+            <div class="actions">
+                <button class="btn btn-primary" id="calculateBtn" onclick="calculateInquiry()" style="display: none;">
+                    🧮 计算询量
+                </button>
+                <button class="btn btn-secondary" onclick="resetForm()">
+                    🔄 重新选择
+                </button>
+            </div>
+        </main>
+
+        <footer>
+            <p>广告库存询量计算器 v1.0 | 静态版本</p>
+        </footer>
+    </div>
+
+    <script src="js/regions.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
